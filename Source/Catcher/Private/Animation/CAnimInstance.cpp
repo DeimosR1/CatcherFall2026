@@ -2,10 +2,18 @@
 
 
 #include "Animation/CAnimInstance.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 void UCAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
+
+	OwningCharacter = Cast<ACharacter>(TryGetPawnOwner());
+	if (OwningCharacter)
+	{
+		OwningCharacterMovementComponent = OwningCharacter->GetCharacterMovement();
+	}
 }
 
 void UCAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
