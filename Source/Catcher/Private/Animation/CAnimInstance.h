@@ -18,6 +18,22 @@ public:
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
+	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
+	FORCEINLINE bool IsMoving() const { return Speed > 0; }
+	
+	UFUNCTION(BlueprintCallable, meta = (BlueprintThreadSafe))
+	FORCEINLINE bool IsNotMoving() const { return Speed <= 0; }
+
+	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
+	FORCEINLINE bool IsOnGround() const { return !bIsFalling; }
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintThreadSafe))
+	FORCEINLINE float GetLookYawOffset() const { return LookRotationOffset.Yaw; }
+
+	UFUNCTION(BlueprintCallable, meta = (BlueprintThreadSafe))
+	FORCEINLINE float GetLookPitchOffset() const { return LookRotationOffset.Pitch; }
+
+
 private:
 	UPROPERTY()
 	class ACharacter* OwningCharacter;
@@ -27,5 +43,22 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
 	float Speed;
+
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
+	bool bIsFalling;
+
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
+	float YawSpeed;
+
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
+	FRotator BodyPrevRotation;
+
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
+	float SmoothedYawSpeed;
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	float YawSpeedSmoothLerpRate = 2.0f;
+
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
+	FRotator LookRotationOffset;
 
 };
