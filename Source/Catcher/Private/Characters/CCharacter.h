@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AbilitySystemInterface.h"
 #include "CCharacter.generated.h"
 
 UCLASS()
-class ACCharacter : public ACharacter
+class ACCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -26,4 +27,19 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	//-----------------------------------------------------------//
+	//                    Gameplay Ability                       //
+	//-----------------------------------------------------------//
+
+public:
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+private:
+	UPROPERTY()
+	class UCAbilitySystemComponent* AbilitySystemComponent;
+
+	UPROPERTY()
+	class UCAttributeSet* CAttributeSet;
 };
+
+//By adding =0 at the end of a virtusl function, you are saying it is completely virtual. If you have at least of these, your class becomes an abstract class, which is the class that is incomplete.
+//If you don't have an implementation of the function, the child class is also an abstract class
