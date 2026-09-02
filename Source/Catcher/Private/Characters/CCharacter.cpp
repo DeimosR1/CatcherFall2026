@@ -19,7 +19,7 @@ ACCharacter::ACCharacter()
 void ACCharacter::ServerSideInit()
 {
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
-	AbilitySystemComponent->execApplyInitialEffects();
+	AbilitySystemComponent->ApplyInitialEffects();
 }
 
 void ACCharacter::ClientSideInit()
