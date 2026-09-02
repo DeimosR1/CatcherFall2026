@@ -13,5 +13,10 @@ UCLASS()
 class UCAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
-	
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
+	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;
+
+	UFUNCTION()
+	void ApplyInitialEffects();
 };

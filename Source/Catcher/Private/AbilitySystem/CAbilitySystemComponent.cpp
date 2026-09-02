@@ -3,3 +3,13 @@
 
 #include "AbilitySystem/CAbilitySystemComponent.h"
 
+void UCAbilitySystemComponent::ApplyInitialEffects()
+{
+	if (!GetOwner() || !GetOwner()->HasAuthority()) { return; }
+
+	for (const TSubclassOf<UGameplayEffect>& InitialEffectClass : InitialEffects)
+	{
+		FGameplayEffectSpecHandle EffecSpec = MakeOutgoingSpec(InitialEffectClass, 1, MakeEffectContext());
+		ApplyGameplayEffectSpecToSelf(*EffecSpec.Data);
+	}
+}

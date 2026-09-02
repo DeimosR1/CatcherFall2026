@@ -16,6 +16,9 @@ public:
 	// Sets default values for this character's properties
 	ACCharacter();
 
+	void ServerSideInit();
+	void ClientSideInit();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -34,7 +37,7 @@ public:
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 private:
-	UPROPERTY()
+	UPROPERTY(VisibleDefaultsOnly, Category = "Ability System")
 	class UCAbilitySystemComponent* AbilitySystemComponent;
 
 	UPROPERTY()
