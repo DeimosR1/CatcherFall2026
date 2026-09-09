@@ -13,7 +13,8 @@ UCLASS()
 class UGameplayWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
+public:
+	virtual void NativeConstruct() override;
 
 private:
 	UPROPERTY(meta=(BindWidget))
@@ -21,5 +22,8 @@ private:
 
 	UPROPERTY(meta=(BindWidget))
 	class UValueGauge* Manabar;
+
+	UPROPERTY()
+	class UAbilitySystemComponent* OwnerAbilitySystemComponent;
 	
 };

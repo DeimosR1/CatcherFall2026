@@ -16,9 +16,13 @@ class UCAbilitySystemComponent : public UAbilitySystemComponent
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
 	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Ability")
+	TArray<TSubclassOf<UGameplayAbility>> InitialAbilities;
 
 public:
 
 	UFUNCTION()
 	void ApplyInitialEffects();
+	UFUNCTION()
+	void GiveInitialAbilities();
 };

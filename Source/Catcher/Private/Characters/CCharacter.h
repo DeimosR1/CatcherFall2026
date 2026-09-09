@@ -19,6 +19,10 @@ public:
 	void ServerSideInit();
 	void ClientSideInit();
 
+	bool bIsLocallyControllerByPlayer() const;
+
+	virtual void PossessedBy(AController* NewController) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -42,6 +46,15 @@ private:
 
 	UPROPERTY()
 	class UCAttributeSet* CAttributeSet;
+
+//-----------------------------------------------------------//
+//                          Widget                           //
+//-----------------------------------------------------------//
+private:
+	UPROPERTY(VisibleDefaultsOnly, Category = "UI")
+	class UWidgetComponent* OverheadWidgetComponent;
+
+	void ConfigureOverheadWidgetComponent();
 };
 
 //By adding =0 at the end of a virtusl function, you are saying it is completely virtual. If you have at least of these, your class becomes an abstract class, which is the class that is incomplete.
