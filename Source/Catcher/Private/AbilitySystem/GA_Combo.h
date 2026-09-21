@@ -36,4 +36,12 @@ private:
 	
 	UFUNCTION()
 	void DoDamage(FGameplayEventData EventData);
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TMap<FName, TSubclassOf<class UGameplayEffect>> DamageEffects;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	TSubclassOf<class UGameplayEffect> DefaultDamageEffect;
+	
+	TSubclassOf<class UGameplayEffect> GetDamageEffectForCurrentCombo() const;
 };

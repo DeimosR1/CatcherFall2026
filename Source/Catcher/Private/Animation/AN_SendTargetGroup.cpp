@@ -12,7 +12,7 @@ void UAN_SendTargetGroup::Notify(USkeletalMeshComponent* MeshComp, UAnimSequence
 	
 	if (!MeshComp){return;}
 	if (TargetSocketNames.Num() == 0){return;}
-	if (MeshComp->GetOwner() || !UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(MeshComp->GetOwner())){return;}
+	if (!MeshComp->GetOwner() || !UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(MeshComp->GetOwner())){return;}
 	
 	FGameplayEventData Data;
 	
@@ -30,4 +30,9 @@ void UAN_SendTargetGroup::Notify(USkeletalMeshComponent* MeshComp, UAnimSequence
 	}
 	
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(MeshComp->GetOwner(),EventTag, Data);
+}
+
+FString UAN_SendTargetGroup::GetNotifyName_Implementation() const
+{
+	return Super::GetNotifyName_Implementation();
 }
