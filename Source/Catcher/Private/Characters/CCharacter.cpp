@@ -4,6 +4,8 @@
 #include "Characters/CCharacter.h"
 #include "AbilitySystem/CAbilitySystemComponent.h"
 #include "AbilitySystem/CAttributeSet.h"
+#include "Catcher/Catcher.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Widgets/OverheadStatusGauge.h"
 
@@ -18,6 +20,9 @@ ACCharacter::ACCharacter()
 
 	OverheadWidgetComponent = CreateDefaultSubobject<UWidgetComponent>("Overhead Widget Component");
 	OverheadWidgetComponent->SetupAttachment(GetRootComponent());
+	
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_CAMERA_BOOM, ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECC_CAMERA_BOOM, ECR_Ignore);
 }
 
 void ACCharacter::ServerSideInit()

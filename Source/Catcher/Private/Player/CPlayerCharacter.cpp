@@ -2,15 +2,19 @@
 
 
 #include "Player/CPlayerCharacter.h"
+
+#include "AbilitySystemComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Catcher/Catcher.h"
 #include "EnhancedInputComponent.h"
 
 ACPlayerCharacter::ACPlayerCharacter()
 {
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>("Camera Boom");
+	CameraBoom->ProbeChannel = ECC_CAMERA_BOOM;
 	CameraBoom->SetupAttachment(GetRootComponent());
 
 	ViewCam = CreateDefaultSubobject<UCameraComponent>("View Cam");
@@ -41,6 +45,26 @@ void ACPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(JumpInputAction, ETriggerEvent::Triggered, this, &ACPlayerCharacter::Jump);
 		EnhancedInputComponent->BindAction(LookInputAction, ETriggerEvent::Triggered, this, &ACPlayerCharacter::HandleLookInput);
 		EnhancedInputComponent->BindAction(MoveInputAction, ETriggerEvent::Triggered, this, &ACPlayerCharacter::HandleMoveInput);
+		
+		for (const TPair<ECAbilityInputID, UInputAction*>& InputActionPair : GameplayAbilityInputActions)
+		{
+			EnhancedInputComponent->BindAction(InputActionPair.Value, ETriggerEvent::Triggered, this, &ACPlayerCharacter::HandleAbilityInputAction, InputActionPair.Key);
+		}
+	}
+}
+
+void ACPlayerCharacter::HandleAbilityInputAction(const struct FInputActionValue& InputActionValue,
+	ECAbilityInputID InputID)
+{
+	bool bPressed = InputActionValue.Get<bool>();
+	
+	if (bPressed)
+	{
+		GetAbilitySystemComponent()->AbilityLocalInputPressed((int32)InputID);
+	}
+	else
+	{
+		GetAbilitySystemComponent()->AbilityLocalInputReleased((int32)InputID);
 	}
 }
 

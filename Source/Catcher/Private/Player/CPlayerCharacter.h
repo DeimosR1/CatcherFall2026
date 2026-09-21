@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystem/CAbilityInputID.h"
 #include "Characters/CCharacter.h"
 #include "CPlayerCharacter.generated.h"
 
@@ -31,7 +32,10 @@ private:
 	//--------------------------------------------------------------------//
 
 private:
-
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TMap<ECAbilityInputID, class UInputAction*> GameplayAbilityInputActions;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputMappingContext* GameplayMappingContext;
 
@@ -42,6 +46,8 @@ private:
 	class UInputAction* LookInputAction;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	class UInputAction* MoveInputAction;
+	
+	void HandleAbilityInputAction(const struct FInputActionValue& InputActionValue, ECAbilityInputID InputID);
 
 	void HandleLookInput(const struct FInputActionValue& InputActionValue); //Adding the & at the end of FInputActionValue makes us reference the value in the memory and not create a copy.
 	
