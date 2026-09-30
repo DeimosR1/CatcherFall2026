@@ -13,3 +13,5 @@ UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_ABILITY_COMBO_CHANGE, "ability.combo.change",
 UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_ABILITY_COMBO_CHANGE_End, "ability.combo.change.end", "tag to send combo ability signal no combo anymore.");
 
 UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_ABILITY_COMBO_DAMAGE, "ability.combo.damage", "tag to send to the combo ability to ask it to do damage.");
+
+UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_STAT_DEAD, "stat.dead", "tag added to the character when they are dead.");

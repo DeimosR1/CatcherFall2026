@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayTagContainer.h"
 #include "CCharacter.generated.h"
 
 UCLASS()
@@ -41,12 +42,32 @@ public:
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 private:
+	void BindGASDelegates();
+	
+	void DeathTagUpdated(const FGameplayTag Tag, int32 Count);
+	
+	bool bGASDelegateBound;
+	
 	UPROPERTY(VisibleDefaultsOnly, Category = "Ability System")
 	class UCAbilitySystemComponent* AbilitySystemComponent;
 
 	UPROPERTY()
 	class UCAttributeSet* CAttributeSet;
+	//-----------------------------------------------------------//
+	//                   Death and Respawn                       //
+	//-----------------------------------------------------------//
 
+private:
+	UFUNCTION()
+	void StartDeathSequence();
+	UFUNCTION()
+	void Respawn();
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	UAnimMontage* DeathAnimMontage;
+	
+	UFUNCTION()
+	void PlayDeathMontage();
 //-----------------------------------------------------------//
 //                          Widget                           //
 //-----------------------------------------------------------//

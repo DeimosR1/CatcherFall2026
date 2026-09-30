@@ -12,10 +12,10 @@ bool UGC_PlayMontage::OnExecute_Implementation(AActor* MyTarget, const FGameplay
 	
 	if (TargetSkeletalMeshComponent)
 	{
-		UAnimInstance* AnimInstance = TargetSkeletalMeshComponent->GetAnimInstance();
-		if (AnimInstance)
+		UAnimInstance* TargetAnimInstance = TargetSkeletalMeshComponent->GetAnimInstance();
+		if (TargetAnimInstance)
 		{
-			AnimInstance->Montage_Play(DamagedMontage);
+			TargetAnimInstance->Montage_Play(MontageToPlay);
 		}
 	}
 	return true;

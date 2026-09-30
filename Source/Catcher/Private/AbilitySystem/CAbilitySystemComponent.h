@@ -14,11 +14,20 @@ UCLASS()
 class UCAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
+	
+protected:
+	UCAbilitySystemComponent();
+	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
 	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Ability")
 	TMap<ECAbilityInputID,TSubclassOf<UGameplayAbility>> InitialAbilities;
+	
+	void HealthChanged(const FOnAttributeChangeData& OnAttributeChangeData);
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
+	TSubclassOf<UGameplayEffect> DeathEffect;
 
 public:
 

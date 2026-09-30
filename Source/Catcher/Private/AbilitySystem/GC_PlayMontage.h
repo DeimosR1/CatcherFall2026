@@ -18,5 +18,5 @@ public:
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	UAnimMontage* DamagedMontage;
+	UAnimMontage* MontageToPlay;
 };
