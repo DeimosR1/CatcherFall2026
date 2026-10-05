@@ -9,6 +9,8 @@
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
 #include "AbilitySystem/CAbilitySystemNativeTags.h"
 #include "AI/NavigationSystemBase.h"
+#include "Player/CPlayerCharacter.h"
+#include "Player/CPlayerController.h"
 
 UGA_Combo::UGA_Combo()
 {
@@ -99,6 +101,9 @@ void UGA_Combo::DoDamage(FGameplayEventData EventData)
 	TArray<FHitResult> HitResults = GetHitResultsFromSweepLocationTargetData(EventData.TargetData, 30.0f, true);
 	for (const FHitResult& HitResult : HitResults)
 	{
+		ACPlayerController* PlayerController = Cast<ACPlayerController>(this->GetOwningActorFromActorInfo()->GetOwner());
+		if (PlayerController->GetGenericTeamId() == Cast<ACPlayerController>(HitResult.GetActor()->GetOwner())->GetGenericTeamId()){continue;}
+		
 		TSubclassOf<UGameplayEffect> DamageEffect = GetDamageEffectForCurrentCombo();
 		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(DamageEffect, GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo()));
 		FGameplayEffectContextHandle EffectContextHandle = MakeEffectContext(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());

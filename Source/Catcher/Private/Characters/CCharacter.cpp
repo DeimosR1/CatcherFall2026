@@ -9,6 +9,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "Widgets/OverheadStatusGauge.h"
 #include "WorldPartition/HLOD/DestructibleHLODComponent.h"
 
@@ -52,6 +53,12 @@ void ACCharacter::PossessedBy(AController* NewController)
 	{
 		ServerSideInit();
 	}
+}
+
+void ACCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ACCharacter, TeamId);
 }
 
 // Called when the game starts or when spawned
@@ -127,6 +134,7 @@ void ACCharacter::Respawn()
 	GetCharacterMovement()->StopMovementImmediately();
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	SetActorTransform(GetController()->StartSpot->GetActorTransform());
 
 	if (APlayerController* PlayerController = GetController<APlayerController>())
 	{
@@ -206,5 +214,15 @@ void ACCharacter::ConfigureOverheadWidgetComponent()
 		OverheadStatusGauge->ConfigureWithAbilitySystemComponent(GetAbilitySystemComponent());
 	}
 	OverheadWidgetComponent->SetHiddenInGame(false);
+}
+
+void ACCharacter::SetGenericTeamId(const FGenericTeamId& NewTeamID)
+{
+	TeamId = NewTeamID;
+}
+
+FGenericTeamId ACCharacter::GetGenericTeamId() const
+{
+	return TeamId;
 }
 

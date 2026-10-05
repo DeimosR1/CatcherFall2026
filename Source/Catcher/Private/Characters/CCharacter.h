@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
 #include "GameplayTagContainer.h"
+#include "GenericTeamAgentInterface.h"
 #include "CCharacter.generated.h"
 
 UCLASS()
@@ -23,6 +24,8 @@ public:
 	bool bIsLocallyControllerByPlayer() const;
 
 	virtual void PossessedBy(AController* NewController) override;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	
 
 protected:
 	// Called when the game starts or when spawned
@@ -89,6 +92,17 @@ private:
 	class UWidgetComponent* OverheadWidgetComponent;
 
 	void ConfigureOverheadWidgetComponent();
+	
+	//--------------------------------------------------------//
+	//                          Team                         //
+	//-------------------------------------------------------//
+public:
+	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID);
+	virtual FGenericTeamId GetGenericTeamId() const;
+
+private:
+	UPROPERTY(Replicated)
+	FGenericTeamId TeamId;
 };
 
 //By adding =0 at the end of a virtusl function, you are saying it is completely virtual. If you have at least of these, your class becomes an abstract class, which is the class that is incomplete.
