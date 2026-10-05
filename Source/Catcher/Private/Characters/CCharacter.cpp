@@ -137,14 +137,53 @@ void ACCharacter::Respawn()
 	{
 		CAttributeSet->SetHealth(CAttributeSet->GetMaxHealth());
 	}
+	
+	RespawnFinished();
 	//this->SetActorHiddenInGame(false);
+}
+
+bool ACCharacter::IsDead() const
+{
+	return AbilitySystemComponent->HasMatchingGameplayTag(TAG_STAT_DEAD);
+}
+
+void ACCharacter::DeathAnimationFinished()
+{
+	if (IsDead())
+	{
+		SetRagdollEnabled(true);
+	}
+}
+
+void ACCharacter::RespawnFinished()
+{
+	SetRagdollEnabled(false);
+}
+
+void ACCharacter::SetRagdollEnabled(bool bIsEnabled)
+{
+	if (bIsEnabled)
+	{
+		SkeletalMeshRelativeTransform = GetMesh()->GetRelativeTransform();
+		GetMesh()->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		GetMesh()->SetSimulatePhysics(true);
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	}
+	else
+	{
+		GetMesh()->SetSimulatePhysics(false);
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetMesh()->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		GetMesh()->SetRelativeTransform(SkeletalMeshRelativeTransform);
+	}
 }
 
 void ACCharacter::PlayDeathMontage()
 {
 	if (DeathAnimMontage)
 	{
-		PlayAnimMontage(DeathAnimMontage);
+		float DeathAnimDuration = PlayAnimMontage(DeathAnimMontage);
+		GetWorldTimerManager().SetTimer(DeathAnimationTimerHandle, this, &ACCharacter::DeathAnimationFinished, DeathAnimDuration + DeathAnimationTimeOffset);
 	}
 }
 

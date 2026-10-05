@@ -62,12 +62,25 @@ private:
 	void StartDeathSequence();
 	UFUNCTION()
 	void Respawn();
+	UFUNCTION()
+	bool IsDead() const;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Death")
 	UAnimMontage* DeathAnimMontage;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	float DeathAnimationTimeOffset = -0.5f;
+	
 	UFUNCTION()
 	void PlayDeathMontage();
+	FTimerHandle DeathAnimationTimerHandle;
+	void DeathAnimationFinished();
+	void RespawnFinished();
+	
+	void SetRagdollEnabled(bool bIsEnabled);
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Ragdoll")
+	FTransform SkeletalMeshRelativeTransform;
 //-----------------------------------------------------------//
 //                          Widget                           //
 //-----------------------------------------------------------//
