@@ -10,7 +10,7 @@
 #include "CCharacter.generated.h"
 
 UCLASS()
-class ACCharacter : public ACharacter, public IAbilitySystemInterface
+class ACCharacter : public ACharacter, public IAbilitySystemInterface, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -97,8 +97,8 @@ private:
 	//                          Team                         //
 	//-------------------------------------------------------//
 public:
-	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID);
-	virtual FGenericTeamId GetGenericTeamId() const;
+	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID) override;
+	virtual FGenericTeamId GetGenericTeamId() const override;
 
 private:
 	UPROPERTY(Replicated)

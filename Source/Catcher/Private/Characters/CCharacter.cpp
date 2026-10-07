@@ -134,8 +134,7 @@ void ACCharacter::Respawn()
 	GetCharacterMovement()->StopMovementImmediately();
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	SetActorTransform(GetController()->StartSpot->GetActorTransform());
-
+	
 	if (APlayerController* PlayerController = GetController<APlayerController>())
 	{
 		EnableInput(PlayerController);
@@ -165,6 +164,14 @@ void ACCharacter::DeathAnimationFinished()
 
 void ACCharacter::RespawnFinished()
 {
+	if (IsValid(GetController()))
+	{
+		if (HasAuthority() && GetController()->StartSpot.IsValid())
+		{
+			SetActorTransform(GetController()->StartSpot->GetActorTransform());
+		}
+	}
+	
 	SetRagdollEnabled(false);
 }
 

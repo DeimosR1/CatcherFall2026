@@ -16,7 +16,7 @@ APlayerController* ACGameMode::SpawnPlayerController(ENetRole InRemoteRole, cons
 	{
 		ControllerTeamInterface->SetGenericTeamId(NewTeamId);
 	}
-	
+	NewController->StartSpot = FindNextStartSpotForTeam(NewTeamId);
 	return NewController;
 }
 
