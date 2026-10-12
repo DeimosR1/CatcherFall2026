@@ -59,14 +59,15 @@ private:
 	//-----------------------------------------------------------//
 	//                   Death and Respawn                       //
 	//-----------------------------------------------------------//
-
+public:
+	UFUNCTION()
+	bool IsDead() const;
+	
 private:
 	UFUNCTION()
 	void StartDeathSequence();
 	UFUNCTION()
 	void Respawn();
-	UFUNCTION()
-	bool IsDead() const;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Death")
 	UAnimMontage* DeathAnimMontage;
@@ -103,6 +104,19 @@ public:
 private:
 	UPROPERTY(Replicated)
 	FGenericTeamId TeamId;
+	
+	
+	//--------------------------------------------------------//
+	//                        AI Perception                   //
+	//-------------------------------------------------------//
+	
+	
+private:
+	UPROPERTY()
+	class UAIPerceptionStimuliSourceComponent* AIPerceptionStimuliSourceComponent;
+	
+	void SetAIPerceptionStimuliSourceEnabled(bool bIsStimuliSourceEnabled);
+	
 };
 
 //By adding =0 at the end of a virtusl function, you are saying it is completely virtual. If you have at least of these, your class becomes an abstract class, which is the class that is incomplete.

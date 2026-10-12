@@ -10,8 +10,9 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
 #include "Widgets/OverheadStatusGauge.h"
-#include "WorldPartition/HLOD/DestructibleHLODComponent.h"
 
 // Sets default values
 ACCharacter::ACCharacter()
@@ -27,6 +28,8 @@ ACCharacter::ACCharacter()
 	
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_CAMERA_BOOM, ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_CAMERA_BOOM, ECR_Ignore);
+	
+	AIPerceptionStimuliSourceComponent = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>("AI Perception Stimuli Source Component");
 }
 
 void ACCharacter::ServerSideInit()
@@ -67,6 +70,7 @@ void ACCharacter::BeginPlay()
 	Super::BeginPlay();
 	ConfigureOverheadWidgetComponent();
 	BindGASDelegates();
+	AIPerceptionStimuliSourceComponent->RegisterForSense(UAISense_Sight::StaticClass());
 }
 
 // Called every frame
@@ -113,6 +117,7 @@ void ACCharacter::StartDeathSequence()
 	UE_LOG(LogTemp, Warning, TEXT("Start Death Sequence"));
 	PlayDeathMontage();
 	
+	SetAIPerceptionStimuliSourceEnabled(false);
 	GetCharacterMovement()->StopMovementImmediately();
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -134,6 +139,7 @@ void ACCharacter::Respawn()
 	GetCharacterMovement()->StopMovementImmediately();
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	SetAIPerceptionStimuliSourceEnabled(true);
 	
 	if (APlayerController* PlayerController = GetController<APlayerController>())
 	{
@@ -231,5 +237,19 @@ void ACCharacter::SetGenericTeamId(const FGenericTeamId& NewTeamID)
 FGenericTeamId ACCharacter::GetGenericTeamId() const
 {
 	return TeamId;
+}
+
+void ACCharacter::SetAIPerceptionStimuliSourceEnabled(bool bIsStimuliSourceEnabled)
+{
+	if (!AIPerceptionStimuliSourceComponent){return;}
+	
+	if (bIsStimuliSourceEnabled)
+	{
+		AIPerceptionStimuliSourceComponent->RegisterWithPerceptionSystem();
+	}
+	else
+	{
+		AIPerceptionStimuliSourceComponent->UnregisterFromPerceptionSystem();
+	}
 }
 
