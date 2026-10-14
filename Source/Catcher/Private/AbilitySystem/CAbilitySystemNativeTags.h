@@ -18,6 +18,8 @@ UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_ABILITY_COMBO_DAMAGE);
 
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_STAT_DEAD);
 
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_PERCEPTION_TARGET_CHANGE);
+
 
 ////////////////////////////////////////////////////////////////////////////
 ///                          Explanation                                 //
