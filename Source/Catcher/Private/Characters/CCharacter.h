@@ -48,10 +48,13 @@ private:
 	void BindGASDelegates();
 	
 	void DeathTagUpdated(const FGameplayTag Tag, int32 Count);
+	void AimTagUpdated(const FGameplayTag Tag, int32 Count);
+	
+	void SetIsAiming(bool bIsAiming);
 	
 	bool bGASDelegateBound;
 	
-	UPROPERTY(VisibleDefaultsOnly, Category = "Ability System")
+	UPROPERTY(VisibleAnywhere, Category = "Ability System", meta = (AllowPrivateAccess = "true"))
 	class UCAbilitySystemComponent* AbilitySystemComponent;
 
 	UPROPERTY()

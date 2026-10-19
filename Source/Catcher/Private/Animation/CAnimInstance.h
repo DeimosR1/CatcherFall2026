@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Animation/AnimInstance.h"
 #include "CAnimInstance.generated.h"
 
@@ -17,7 +18,10 @@ public:
 	virtual void NativeInitializeAnimation() override;
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-
+	
+	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
+	FORCEINLINE bool ShouldDoFullBody() const {return !IsMoving() && !bIsAiming;}
+	
 	UFUNCTION(BlueprintCallable, meta=(BlueprintThreadSafe))
 	FORCEINLINE bool IsMoving() const { return Speed > 0; }
 	
@@ -46,6 +50,14 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
 	bool bIsFalling;
+	
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
+	bool bIsAiming;
+	
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
+	float RightSpeed;
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
+	float ForwardSpeed;
 
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
 	float YawSpeed;
@@ -60,5 +72,7 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
 	FRotator LookRotationOffset;
+	
+	void AimTagUpdated(const FGameplayTag Tag, int32 NewCount);
 
 };
