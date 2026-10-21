@@ -27,7 +27,9 @@ ACCharacter::ACCharacter()
 	OverheadWidgetComponent->SetupAttachment(GetRootComponent());
 	
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_CAMERA_BOOM, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_TARGET, ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_CAMERA_BOOM, ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECC_TARGET, ECR_Ignore);
 	
 	AIPerceptionStimuliSourceComponent = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>("AI Perception Stimuli Source Component");
 }
@@ -122,6 +124,12 @@ void ACCharacter::SetIsAiming(bool bIsAiming)
 {
 	bUseControllerRotationYaw = bIsAiming;
 	GetCharacterMovement()->bOrientRotationToMovement = !bIsAiming;
+	OnAimStatChanged(bIsAiming);
+}
+
+void ACCharacter::OnAimStatChanged(bool bIsAiming)
+{
+	//Override in child class
 }
 
 void ACCharacter::StartDeathSequence()

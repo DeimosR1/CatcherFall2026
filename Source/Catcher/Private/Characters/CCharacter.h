@@ -51,6 +51,7 @@ private:
 	void AimTagUpdated(const FGameplayTag Tag, int32 Count);
 	
 	void SetIsAiming(bool bIsAiming);
+	virtual void OnAimStatChanged(bool bIsAiming);
 	
 	bool bGASDelegateBound;
 	

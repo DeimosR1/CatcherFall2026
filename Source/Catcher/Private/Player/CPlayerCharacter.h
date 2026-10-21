@@ -56,5 +56,22 @@ private:
 	FVector GetRightDirection() const; //When you have const here in the function you are saying that anything in the class is not supposed to be changed. It doesn't let you modified the value.
 	FVector GetLookFwdDirection() const;
 	FVector GetMoveFwdDirection() const;
+	
+	//--------------------------------------------------------------------//
+	//                               Camera                                //
+	//--------------------------------------------------------------------//
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "View")
+	FVector CameraAimLocationOffset;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "View")
+	float CameraLerpSpeed = 20.0f;
+	
+	FTimerHandle CameraLerpTimerHandle;
+	
+	void LerpCameraToLocalOffsetLocation(const FVector& Goal);
+	void TickCameraLocationOffsetLerp(FVector Goal);
+	
+	virtual void OnAimStatChanged(bool bNewIsAiming) override;
 
 };
