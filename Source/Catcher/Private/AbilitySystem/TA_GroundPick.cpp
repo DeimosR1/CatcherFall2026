@@ -6,11 +6,15 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Abilities/GameplayAbility.h"
 #include "Catcher/Catcher.h"
+#include "Components/DecalComponent.h"
 #include "Engine/OverlapResult.h"
 
 ATA_GroundPick::ATA_GroundPick()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	SetRootComponent(CreateDefaultSubobject<USceneComponent>("RootComp"));
+	DecalComponent = CreateDefaultSubobject<UDecalComponent>("DecalComponent");
+	DecalComponent->SetupAttachment(GetRootComponent());
 	
 }
 
@@ -43,7 +47,19 @@ void ATA_GroundPick::ConfirmTargetingAndContinue()
 	}
 	
 	FGameplayAbilityTargetDataHandle TargetData =  UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActorArray(TargetActors.Array(), false);
+	
+	FGameplayAbilityTargetData_SingleTargetHit* HitLoc = new FGameplayAbilityTargetData_SingleTargetHit;
+	HitLoc->HitResult.ImpactPoint = GetActorLocation();
+	HitLoc->HitResult.ImpactNormal = FVector::UpVector;
+	
+	TargetData.Add(HitLoc);
 	TargetDataReadyDelegate.Broadcast(TargetData);
+}
+
+void ATA_GroundPick::SetTargetAreaRadius(float NewTargetAreaRadius)
+{
+	TargetAreaRadius = NewTargetAreaRadius;
+	DecalComponent->DecalSize = FVector{TargetAreaRadius};
 }
 
 void ATA_GroundPick::Tick(float DeltaSeconds)

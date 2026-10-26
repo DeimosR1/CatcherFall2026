@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "GameplayTagContainer.h"
 #include "CAIController.generated.h"
 
 struct FAIStimulus;
@@ -18,7 +19,6 @@ class ACAIController : public AAIController
 	
 public:
 	ACAIController();
-	
 	virtual void OnPossess(APawn* NewPawn) override;
 	virtual void BeginPlay() override;
 	
@@ -60,4 +60,10 @@ private:
 	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess="true"))
 	AActor* CurrentTargetActor;
 	
+	void ClearAndDisableAllSenses();
+	void EnableAllSenses();
+	void PawnDeadTagUpdated(const FGameplayTag Tag, int32 NewCount);
+	void PawnStunTagUpdated(const FGameplayTag Tag, int32 NewCount);
+	
+	bool bCachedIsPawnDead = false;
 };

@@ -24,6 +24,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage*  ComboMontage;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	float AttachDetectionSweepRadius = 60.0f;
+	
 	UFUNCTION()
 	void HandleComboChange(FGameplayEventData EventData);
 	

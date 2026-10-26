@@ -16,5 +16,6 @@ UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_ABILITY_COMBO_DAMAGE, "ability.combo.damage",
 
 UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_STAT_DEAD, "stat.dead", "tag added to the character when they are dead.");
 UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_STAT_AIMING, "stat.aiming", "tag added to the character when they are aiming/targeting.");
+UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_STAT_STUN, "stat.stun", "tag added to the character when they are stunned.");
 
 UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_PERCEPTION_TARGET_CHANGE, "perception.target.change", "Event Tag used to send to State Tree to tell it target has changed.");

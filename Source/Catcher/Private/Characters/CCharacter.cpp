@@ -89,6 +89,22 @@ void ACCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 }
 
+void ACCharacter::SetInputEnabledFromPlayerController(bool bNewInputEnabled)
+{
+	if (APlayerController* PlayerController = GetController<APlayerController>())
+	{
+		if (bNewInputEnabled)
+		{
+			EnableInput(PlayerController);
+		}
+		else
+		{
+			DisableInput(PlayerController);
+			
+		}
+	}
+}
+
 UAbilitySystemComponent* ACCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
@@ -101,6 +117,7 @@ void ACCharacter::BindGASDelegates()
 	bGASDelegateBound = true;
 	AbilitySystemComponent->RegisterGameplayTagEvent(TAG_STAT_DEAD).AddUObject(this, &ACCharacter::DeathTagUpdated);
 	AbilitySystemComponent->RegisterGameplayTagEvent(TAG_STAT_AIMING).AddUObject(this, &ACCharacter::AimTagUpdated);
+	AbilitySystemComponent->RegisterGameplayTagEvent(TAG_STAT_STUN).AddUObject(this, &ACCharacter::StunTagUpdated);
 }
 
 void ACCharacter::DeathTagUpdated(const FGameplayTag Tag, int32 Count)
@@ -118,6 +135,26 @@ void ACCharacter::DeathTagUpdated(const FGameplayTag Tag, int32 Count)
 void ACCharacter::AimTagUpdated(const FGameplayTag Tag, int32 Count)
 {
 	SetIsAiming(Count != 0);
+}
+
+void ACCharacter::StunTagUpdated(const FGameplayTag Tag, int32 Count)
+{
+	if (IsDead())
+	{
+		return;
+	}
+	
+	bool bIsStun = Count != 0;
+	
+	if (bIsStun)
+	{
+		PlayAnimMontage(StunAnimMontage);
+	}
+	else
+	{
+		StopAnimMontage(StunAnimMontage);
+	}
+	SetInputEnabledFromPlayerController(bIsStun);	
 }
 
 void ACCharacter::SetIsAiming(bool bIsAiming)
@@ -142,9 +179,11 @@ void ACCharacter::StartDeathSequence()
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	if (APlayerController* PlayerController = GetController<APlayerController>())
+	SetInputEnabledFromPlayerController(false);	
+	
+	if (AbilitySystemComponent)
 	{
-		DisableInput(PlayerController);
+		AbilitySystemComponent->CancelAllAbilities();
 	}
 	//SetActorHiddenInGame(true);
 }
@@ -161,10 +200,7 @@ void ACCharacter::Respawn()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	SetAIPerceptionStimuliSourceEnabled(true);
 	
-	if (APlayerController* PlayerController = GetController<APlayerController>())
-	{
-		EnableInput(PlayerController);
-	}
+	SetInputEnabledFromPlayerController(true);	
 	
 	if (CAttributeSet)
 	{

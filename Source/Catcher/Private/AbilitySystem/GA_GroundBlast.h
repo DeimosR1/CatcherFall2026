@@ -21,6 +21,9 @@ public:
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	
 private:
+	UPROPERTY(EditDefaultsOnly, Category="GameplayCue", meta=(Category="GameplayCue"))
+	FGameplayTagContainer BlastingGameplayCueTags;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* CastMontage;
 	
@@ -29,6 +32,17 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Effect")
 	TSubclassOf<UGameplayEffect> DamageEffect;
+	//UPROPERTY(EditDefaultsOnly, Category = "Effect")
+	//TSubclassOf<UGameplayEffect> StunEffect;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Targeting")
+	float TargetTraceRange = 2000.0f;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Targeting")
+	float TargetAreaRadius = 400.0f;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Targeting")
+	float StunDuration = 3.0f;
 	
 	UFUNCTION()
 	void TargetConfirmed(const FGameplayAbilityTargetDataHandle& TargetDataHandle);

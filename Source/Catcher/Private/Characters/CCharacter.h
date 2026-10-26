@@ -38,6 +38,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+private:
+	void SetInputEnabledFromPlayerController(bool bNewInputEnabled);
+	
 	//-----------------------------------------------------------//
 	//                    Gameplay Ability                       //
 	//-----------------------------------------------------------//
@@ -49,6 +52,7 @@ private:
 	
 	void DeathTagUpdated(const FGameplayTag Tag, int32 Count);
 	void AimTagUpdated(const FGameplayTag Tag, int32 Count);
+	void StunTagUpdated(const FGameplayTag Tag, int32 Count);
 	
 	void SetIsAiming(bool bIsAiming);
 	virtual void OnAimStatChanged(bool bIsAiming);
@@ -89,6 +93,10 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Ragdoll")
 	FTransform SkeletalMeshRelativeTransform;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Stun")
+	UAnimMontage* StunAnimMontage;
+	
 //-----------------------------------------------------------//
 //                          Widget                           //
 //-----------------------------------------------------------//

@@ -18,11 +18,19 @@ class ATA_GroundPick : public AGameplayAbilityTargetActor
 public:
 	ATA_GroundPick();
 	virtual void ConfirmTargetingAndContinue() override;
+	void SetTargetAreaRadius(float NewTargetAreaRadius);
+	void SetTargetTraceRange(float NewTargetTraceRange) {TargetTraceRange = NewTargetTraceRange; };
+	void SetShouldDrawDebug(bool bNewShouldDrawDebug) { bShouldDrawDebug = bNewShouldDrawDebug; };
+	void AddTargetTeamAttitude(ETeamAttitude::Type NewTeamAttitude) {TargetTeamAttitutes.Add(NewTeamAttitude); };
 	
 protected:
 	virtual void Tick(float DeltaSeconds) override;
 	
 private:
+	
+	UPROPERTY(VisibleAnywhere, Category="Visual")
+	class UDecalComponent* DecalComponent;
+	
 	FVector GetTargetPoint() const;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Targeting")
