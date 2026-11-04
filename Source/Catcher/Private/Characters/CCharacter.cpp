@@ -38,7 +38,7 @@ void ACCharacter::ServerSideInit()
 {
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	AbilitySystemComponent->ApplyInitialEffects();
-	AbilitySystemComponent->GiveInitialAbilities();
+	AbilitySystemComponent->GiveAbilities();
 }
 
 void ACCharacter::ClientSideInit()
@@ -64,6 +64,11 @@ void ACCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ACCharacter, TeamId);
+}
+
+const TMap<ECAbilityInputID, TSubclassOf<class UGameplayAbility>>& ACCharacter::GetInitialAbilities() const
+{
+	return AbilitySystemComponent -> GetInitialAbilities();
 }
 
 // Called when the game starts or when spawned

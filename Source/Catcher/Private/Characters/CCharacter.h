@@ -7,6 +7,7 @@
 #include "AbilitySystemInterface.h"
 #include "GameplayTagContainer.h"
 #include "GenericTeamAgentInterface.h"
+#include "AbilitySystem/CAbilityInputID.h"
 #include "CCharacter.generated.h"
 
 UCLASS()
@@ -25,6 +26,8 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	const TMap<ECAbilityInputID, TSubclassOf<class UGameplayAbility>>& GetInitialAbilities() const;
 	
 
 protected:

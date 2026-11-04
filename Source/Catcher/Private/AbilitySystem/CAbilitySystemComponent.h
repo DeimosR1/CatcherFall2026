@@ -24,6 +24,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Ability")
 	TMap<ECAbilityInputID,TSubclassOf<UGameplayAbility>> InitialAbilities;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Ability")
+	TMap<ECAbilityInputID,TSubclassOf<UGameplayAbility>> BasicAbilities;
+	
 	void HealthChanged(const FOnAttributeChangeData& OnAttributeChangeData);
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
@@ -34,5 +37,7 @@ public:
 	UFUNCTION()
 	void ApplyInitialEffects();
 	UFUNCTION()
-	void GiveInitialAbilities();
+	void GiveAbilities();
+	
+	const TMap<ECAbilityInputID, TSubclassOf<UGameplayAbility>>& GetInitialAbilities() const;
 };
