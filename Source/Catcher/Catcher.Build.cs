@@ -8,7 +8,8 @@ public class Catcher : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayAbilities", "GameplayTasks", "GameplayTags", "AIModule", "UMG", "Slate", "SlateCore", "NavigationSystem", "GameplayStateTreeModule", "StateTreeModule" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayAbilities", "GameplayTasks", "GameplayTags", "AIModule", "UMG", "Slate",
+			"SlateCore", "NavigationSystem", "GameplayStateTreeModule", "StateTreeModule", "OnlineSubsystem", "OnlineSubsystemEOS", "Networking", "HTTP", "JSON" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 
