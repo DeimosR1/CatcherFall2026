@@ -40,6 +40,12 @@ void ACPlayerController::AcknowledgePossession(APawn* NewPawn)
 	}
 }
 
+void ACPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	SetInputMode(FInputModeGameAndUI());
+}
+
 void ACPlayerController::SpawnGameplayWidget()
 {
 	if (IsLocalPlayerController()) 

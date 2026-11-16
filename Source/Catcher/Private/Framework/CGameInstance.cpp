@@ -32,6 +32,25 @@ bool UCGameInstance::IsSessionServer() const
 	return GetWorld() && GetWorld()->GetNetMode() == NM_DedicatedServer;
 }
 
+void UCGameInstance::PlayerJoined(const FUniqueNetIdRepl& UniqueId)
+{
+	if (WaitPlayerJoinTimeoutHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(WaitPlayerJoinTimeoutHandle);
+	}
+	PlayerRecord.Add(UniqueId);
+}
+
+void UCGameInstance::PlayerLeft(const FUniqueNetIdRepl& UniqueId)
+{
+	PlayerRecord.Remove(UniqueId);
+	if (PlayerRecord.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("----All Players Left, Terminating----"));
+		TerminateSessionServer();
+	}
+}
+
 void UCGameInstance::CreateSession()
 {
 	if (IOnlineSessionPtr SessionPtr = GetSessionInterface())
@@ -106,6 +125,7 @@ void UCGameInstance::OnSessionCreated(FName SessionName, bool bWasSuccessful)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Session %s created successfully!"), *SessionName.ToString());
 		LoadLevelAndListen(GameLevel);
+		GetWorld()->GetTimerManager().SetTimer(WaitPlayerJoinTimeoutHandle, this, &UCGameInstance::WaitPlayerJoinTimeoutReached, WaitPlayerJoinTimeoutDuration);
 	}
 	else
 	{
@@ -123,6 +143,68 @@ void UCGameInstance::OnSessionCreated(FName SessionName, bool bWasSuccessful)
 void UCGameInstance::OnEndSessionComplete(FName SessionName, bool bWasSuccessful)
 {
 	FGenericPlatformMisc::RequestExit(false);
+}
+
+void UCGameInstance::WaitPlayerJoinTimeoutReached()
+{
+	UE_LOG(LogTemp, Warning, TEXT("----------Session Server Shutdown after %f seconds without player joining-------------"), WaitPlayerJoinTimeoutDuration);
+	TerminateSessionServer();
+}
+
+
+bool UCGameInstance::IsLoggedIn() const
+{
+	IOnlineIdentityPtr IdentityInterface = GetIdentityInterface();
+	if (IdentityInterface)
+	{
+		return IdentityInterface->GetLoginStatus(0) == ELoginStatus::LoggedIn;
+	}
+	return false;
+}
+
+void UCGameInstance::ClientAuthPortalLogin()
+{
+	IOnlineIdentityPtr IdentityInterface = GetIdentityInterface();
+	if (IdentityInterface)
+	{
+		IdentityInterface->OnLoginCompleteDelegates->RemoveAll(this);
+		IdentityInterface->OnLoginCompleteDelegates->AddUObject(this, &UCGameInstance::ClientLoginCompleted);
+		if (!IdentityInterface->Login(0, FOnlineAccountCredentials("accountportal","","")))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("----------------------------------"));
+			UE_LOG(LogTemp, Warning, TEXT("------Login Failed Right Away-----"));
+			UE_LOG(LogTemp, Warning, TEXT("----------------------------------"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("----------------------------------"));
+		UE_LOG(LogTemp, Warning, TEXT("---Identity Interface not found---"));
+		UE_LOG(LogTemp, Warning, TEXT("----------------------------------"));
+	}
+}
+
+void UCGameInstance::ClientLoginCompleted(int LocalPlayerNumber, bool bWasSuccessful, const FUniqueNetId& UserId,
+	const FString& ErrorMsg)
+{
+	IOnlineIdentityPtr IdentityInterface = GetIdentityInterface();
+	if (IdentityInterface)
+	{
+		IdentityInterface->OnLoginCompleteDelegates->RemoveAll(this);
+		if (bWasSuccessful)
+		{
+			FString PlayerNickname = IdentityInterface->GetPlayerNickname(UserId);
+			UE_LOG(LogTemp, Warning, TEXT("----------------------------------"));
+			UE_LOG(LogTemp, Warning, TEXT("-----Logged in successful as:-----"));
+			UE_LOG(LogTemp, Warning, TEXT("-----%s-----"), *PlayerNickname);
+			UE_LOG(LogTemp, Warning, TEXT("----------------------------------"));
+			OnAuthLoginCompletedDelegate.Broadcast(bWasSuccessful, PlayerNickname, ErrorMsg);
+			return;
+		}
+	}
+	
+	OnAuthLoginCompletedDelegate.Broadcast(bWasSuccessful, "", ErrorMsg);
+	
 }
 
 IOnlineSessionPtr UCGameInstance::GetSessionInterface() const

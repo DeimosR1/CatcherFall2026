@@ -23,6 +23,8 @@ public:
 
 	//Called when clients recieved their pawn on the client machine. Not called on the dedicated server.
 	virtual void AcknowledgePossession(APawn* NewPawn) override;
+	
+	virtual void BeginPlay() override;
 
 private:
 	UPROPERTY()

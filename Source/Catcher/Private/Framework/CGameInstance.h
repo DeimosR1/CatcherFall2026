@@ -13,6 +13,7 @@
 /**
  * 
  */
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnAuthLoginCompletedDelegate, bool /*bWasSuccessful*/, const FString& /*PlayerNickname*/, const FString& /*ErrorMessage*/);
 UCLASS()
 class UCGameInstance : public UGameInstance
 {
@@ -22,7 +23,9 @@ public:
 	virtual void Init() override;
 	
 	bool IsSessionServer() const;
-	
+	void PlayerJoined(const FUniqueNetIdRepl& UniqueId);
+	void PlayerLeft(const FUniqueNetIdRepl& UniqueId);
+
 private:
 	void CreateSession();
 	void TerminateSessionServer();
@@ -30,6 +33,24 @@ private:
 	FOnlineSessionSettings GenerateSessionSetting(const FName& SessionName, const FString& SessionSearchID, int Port);
 	void OnSessionCreated(FName SessionName, bool bWasSuccessful);
 	void OnEndSessionComplete(FName SessionName, bool bWasSuccessful);
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Session")
+	float WaitPlayerJoinTimeoutDuration = 60.0f;
+	
+	FTimerHandle WaitPlayerJoinTimeoutHandle;
+	void WaitPlayerJoinTimeoutReached();
+	
+	TSet<FUniqueNetIdRepl> PlayerRecord;
+	//--------------------------------------------------------------------//
+	//                            Game Client                             //
+	//--------------------------------------------------------------------//
+public:
+	FOnAuthLoginCompletedDelegate OnAuthLoginCompletedDelegate;
+	bool IsLoggedIn() const;
+	void ClientAuthPortalLogin();
+private:
+	void ClientLoginCompleted(int LocalPlayerNumber, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& ErrorMsg);
+	
 	
 	//--------------------------------------------------------------------//
 	//                          Oline Interfaces                          //

@@ -15,5 +15,13 @@ class AMainMenuController : public APlayerController
 	GENERATED_BODY()
 	
 protected:
-	AMainMenuController();
+	virtual void AcknowledgePossession(class APawn* NewPawn) override;
+	virtual void BeginPlay() override;
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Widget")
+	TSubclassOf<class UUserWidget> WidgetClass;
+	
+	UPROPERTY()
+	class UUserWidget* MenuWidget;
+	
 };
