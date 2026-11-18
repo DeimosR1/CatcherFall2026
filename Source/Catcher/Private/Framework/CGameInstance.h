@@ -8,6 +8,8 @@
 #include "Interfaces/OnlineIdentityInterface.h"
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
+#include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
 #include "CGameInstance.generated.h"
 
 /**
@@ -47,10 +49,25 @@ private:
 public:
 	FOnAuthLoginCompletedDelegate OnAuthLoginCompletedDelegate;
 	bool IsLoggedIn() const;
+	bool IsLoggingIn() const;
 	void ClientAuthPortalLogin();
+	
+	void RequestCreateNewSession();
+	void TryFindAndJoinSession();
+	
 private:
 	void ClientLoginCompleted(int LocalPlayerNumber, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& ErrorMsg);
 	
+	bool bIsLoggingIn;
+	
+		
+	FString GetCoordinatorURL();
+	UPROPERTY(EditDefaultsOnly, Category = "Coordinator")
+	FString DEFAULT_COORDINATOR_URL = "127.0.0.1";
+	
+	FName COORDINATOR_URL_KEY = "COORDINATOR_URL";
+	
+	void SessionCreationRequestCompleted(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bProcessedSuccessfully, FGuid SessionSearchID);
 	
 	//--------------------------------------------------------------------//
 	//                          Oline Interfaces                          //

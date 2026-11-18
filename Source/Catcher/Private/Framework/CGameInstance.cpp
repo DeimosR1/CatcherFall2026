@@ -3,8 +3,10 @@
 
 #include "Framework/CGameInstance.h"
 
+#include "HttpModule.h"
 #include "Online.h"
 #include "Developer/Windows/LiveCodingServer/Public/ILiveCodingServer.h"
+#include "Interfaces/IHttpRequest.h"
 #include "Trace/Analysis.h"
 
 void UCGameInstance::Init()
@@ -108,6 +110,7 @@ FOnlineSessionSettings UCGameInstance::GenerateSessionSetting(const FName& Sessi
 	OnlineSessionSettings.bAllowJoinViaPresence = false;
 	OnlineSessionSettings.bAllowJoinViaPresenceFriendsOnly = false;
 	OnlineSessionSettings.bAllowInvites = true;
+	OnlineSessionSettings.bAllowJoinInProgress = true;
 	OnlineSessionSettings.bUseLobbiesIfAvailable = false;
 	OnlineSessionSettings.bUseLobbiesVoiceChatIfAvailable = false;
 	OnlineSessionSettings.bUsesStats = true;
@@ -162,8 +165,14 @@ bool UCGameInstance::IsLoggedIn() const
 	return false;
 }
 
+bool UCGameInstance::IsLoggingIn() const
+{
+	return bIsLoggingIn;
+}
+
 void UCGameInstance::ClientAuthPortalLogin()
 {
+	bIsLoggingIn = true;
 	IOnlineIdentityPtr IdentityInterface = GetIdentityInterface();
 	if (IdentityInterface)
 	{
@@ -171,6 +180,7 @@ void UCGameInstance::ClientAuthPortalLogin()
 		IdentityInterface->OnLoginCompleteDelegates->AddUObject(this, &UCGameInstance::ClientLoginCompleted);
 		if (!IdentityInterface->Login(0, FOnlineAccountCredentials("accountportal","","")))
 		{
+			bIsLoggingIn = false;
 			UE_LOG(LogTemp, Warning, TEXT("----------------------------------"));
 			UE_LOG(LogTemp, Warning, TEXT("------Login Failed Right Away-----"));
 			UE_LOG(LogTemp, Warning, TEXT("----------------------------------"));
@@ -178,15 +188,56 @@ void UCGameInstance::ClientAuthPortalLogin()
 	}
 	else
 	{
+		bIsLoggingIn = false;
 		UE_LOG(LogTemp, Warning, TEXT("----------------------------------"));
 		UE_LOG(LogTemp, Warning, TEXT("---Identity Interface not found---"));
 		UE_LOG(LogTemp, Warning, TEXT("----------------------------------"));
 	}
 }
 
-void UCGameInstance::ClientLoginCompleted(int LocalPlayerNumber, bool bWasSuccessful, const FUniqueNetId& UserId,
-	const FString& ErrorMsg)
+void UCGameInstance::RequestCreateNewSession()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Requesting to create new session"));
+	FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
+	FGuid SessionSearchID = FGuid::NewGuid();
+	FString CoordinatorURL = GetCoordinatorURL();
+	UE_LOG(LogTemp, Warning, TEXT("Coordinator URL is: %s"), *CoordinatorURL);
+	
+	// 127.0.0.1/Session is the Default
+	FString URL = FString::Printf(TEXT("%s/Session"), *CoordinatorURL);
+	Request->SetURL(URL);
+	//POST means you are requesting something to be created.
+	Request->SetVerb("POST");
+	
+	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json")); //Json -> Java Script Object Notation
+	
+	TSharedPtr<FJsonObject> JsonObject = MakeShareable<FJsonObject>(new FJsonObject());
+	JsonObject->SetStringField(SessionNameKey.ToString(),FGuid::NewGuid().ToString());
+	JsonObject->SetStringField(SessionSearchIDKey.ToString(),SessionSearchID.ToString());
+	
+	FString RequestBody;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&RequestBody);
+	FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
+	
+	Request->SetContentAsString(RequestBody);
+	
+	Request->OnProcessRequestComplete().BindUObject(this, &UCGameInstance::SessionCreationRequestCompleted, SessionSearchID);
+	
+	if (!Request->ProcessRequest())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Session Creation Request Failed Right away."));
+	}
+}
+
+void UCGameInstance::TryFindAndJoinSession()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Requesting to find and join session"));
+}
+
+void UCGameInstance::ClientLoginCompleted(int LocalPlayerNumber, bool bWasSuccessful, const FUniqueNetId& UserId,
+                                          const FString& ErrorMsg)
+{
+	bIsLoggingIn = false;
 	IOnlineIdentityPtr IdentityInterface = GetIdentityInterface();
 	if (IdentityInterface)
 	{
@@ -205,6 +256,46 @@ void UCGameInstance::ClientLoginCompleted(int LocalPlayerNumber, bool bWasSucces
 	
 	OnAuthLoginCompletedDelegate.Broadcast(bWasSuccessful, "", ErrorMsg);
 	
+}
+
+FString UCGameInstance::GetCoordinatorURL()
+{
+	FString CoordinatorUrl = GetCommandlineArgAsString(COORDINATOR_URL_KEY);
+	if (CoordinatorUrl != "")
+	{
+		return CoordinatorUrl;
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("Can't find command coordinator url argument, using default one: %s"), *(DEFAULT_COORDINATOR_URL));
+	return DEFAULT_COORDINATOR_URL;
+}
+
+void UCGameInstance::SessionCreationRequestCompleted(FHttpRequestPtr Request, FHttpResponsePtr Response,
+	bool bProcessedSuccessfully, FGuid SessionSearchID)
+{
+	if (bProcessedSuccessfully && Response.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Session Creation Request Successful!"));
+		int32 ResponseCode = Response->GetResponseCode();
+		if (ResponseCode == 200)
+		{
+			FString ResponseString = Response->GetContentAsString();
+			
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseString);
+			
+			int32 Port = 0;
+			if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+			{
+				Port = JsonObject->GetIntegerField(*(SessionPortKey.ToString()));
+				UE_LOG(LogTemp, Warning, TEXT("Created Game in port: %d"), Port);
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Session Creation Request Failed!"));
+	}
 }
 
 IOnlineSessionPtr UCGameInstance::GetSessionInterface() const

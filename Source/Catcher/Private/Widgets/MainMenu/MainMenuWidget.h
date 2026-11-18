@@ -33,9 +33,23 @@ private:
 	UPROPERTY(meta=(BindWidget))
 	class UButton* LoginButton;
 	
+	UPROPERTY(meta=(BindWidget))
+	class UMatchMakingWidget* MatchMakingWidget;
+	
+	UPROPERTY(meta=(BindWidget))
+	class UWaitingWidget* WaitingWidget;
+	
+	UFUNCTION()
+	void SwitchToMatchMakingWidget();
+	
 	UFUNCTION()
 	void LoginButtonClicked();
 	
 	UFUNCTION()
 	void LoginCompleted(bool bWasSuccessful, const FString& PlayerNickname, const FString& ErrorMsg);
+	
+	UFUNCTION()
+	void WaitForNewSessionCreate();
+	UFUNCTION()
+	void WaitForFindAndJoinSession();
 };
