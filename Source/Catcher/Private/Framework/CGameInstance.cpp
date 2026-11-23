@@ -229,6 +229,20 @@ void UCGameInstance::RequestCreateNewSession()
 	}
 }
 
+void UCGameInstance::StartFindingAndJoinSession(FGuid SessionSearchID)
+{
+		UE_LOG(LogTemp, Warning, TEXT("Start Finding and Join Session with Session Search ID: %s"), *(SessionSearchID.ToString()));
+	StopSessionSearches();
+	
+	GetWorld()->GetTimerManager().SetTimer(
+		FindSessionTimerHandle, 
+		FTimerDelegate::CreateUObject(this, &UCGameInstance::FindAndJoinSession, SessionSearchID),
+		SessionSearchInterval, true);
+	
+	GetWorld()->GetTimerManager().SetTimer(FindSessionTimeoutTimerHandle,
+		this, &UCGameInstance::StopSessionSearches, SessionSearchTimeoutDuration);
+}
+
 void UCGameInstance::TryFindAndJoinSession()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Requesting to find and join session"));
@@ -289,6 +303,7 @@ void UCGameInstance::SessionCreationRequestCompleted(FHttpRequestPtr Request, FH
 			{
 				Port = JsonObject->GetIntegerField(*(SessionPortKey.ToString()));
 				UE_LOG(LogTemp, Warning, TEXT("Created Game in port: %d"), Port);
+				StartFindingAndJoinSession(SessionSearchID);
 			}
 		}
 	}
@@ -296,6 +311,130 @@ void UCGameInstance::SessionCreationRequestCompleted(FHttpRequestPtr Request, FH
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Session Creation Request Failed!"));
 	}
+}
+
+void UCGameInstance::FindAndJoinSession(FGuid SessionSearchID)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Retry to Find and join Session Search ID: %s"), *SessionSearchID.ToString());
+	if (IOnlineSessionPtr SessionPtr = GetSessionInterface())
+	{
+		SessionSearch = MakeShareable(new FOnlineSessionSearch);
+		if (SessionSearch)
+		{
+			SessionSearch->bIsLanQuery = false;
+			SessionSearch->MaxSearchResults = 1;
+			if (SessionSearchID.IsValid())
+			{
+				SessionSearch->QuerySettings.Set(SessionSearchIDKey, SessionSearchID.ToString(), EOnlineComparisonOp::Equals);
+			}
+			
+			SessionPtr->OnFindSessionsCompleteDelegates.RemoveAll(this);
+			SessionPtr->OnFindSessionsCompleteDelegates.AddUObject(this, &UCGameInstance::FindSessionCompleted);
+			if (!SessionPtr->FindSessions(0, SessionSearch.ToSharedRef()))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Session Search Failed Right away!"))
+				SessionPtr->OnFindSessionsCompleteDelegates.RemoveAll(this);
+			}
+		}
+	}
+}
+
+void UCGameInstance::StopSessionSearches()
+{
+	if (FindSessionTimerHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FindSessionTimerHandle);
+	}
+	if (FindSessionTimeoutTimerHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FindSessionTimeoutTimerHandle);
+	}
+	
+	if (IOnlineSessionPtr SessionPtr = GetSessionInterface())
+	{
+		SessionPtr->OnFindSessionsCompleteDelegates.RemoveAll(this);
+		SessionPtr->OnJoinSessionCompleteDelegates.RemoveAll(this);
+	}
+}
+
+void UCGameInstance::FindSessionCompleted(bool bWasSuccessful)
+{
+	if (!bWasSuccessful || SessionSearch->SearchResults.Num() == 0) {return;}
+	
+	UE_LOG(LogTemp, Warning, TEXT("Found Session to Join"))
+	StopSessionSearches();
+	JoinSessionWithSearchResults(SessionSearch->SearchResults[0]);
+}
+
+void UCGameInstance::JoinSessionWithSearchResults(const FOnlineSessionSearchResult& SessionSearchResults)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Join Session with search result!"));
+	IOnlineSessionPtr SessionPtr = GetSessionInterface();
+	
+	if (SessionPtr)
+	{
+		FString SessionName = "";
+		SessionSearchResults.Session.SessionSettings.Get<FString>(SessionNameKey, SessionName);
+		
+		int64 Port = 0;
+		const FOnlineSessionSetting* PortSetting = SessionSearchResults.Session.SessionSettings.Settings.Find(SessionPortKey);
+		if (PortSetting) {PortSetting->Data.GetValue(Port);}
+		
+		UE_LOG(LogTemp, Warning, TEXT("Trying to join session: %s, at port: %d"), *SessionName, (int)Port);
+		SessionPtr->OnJoinSessionCompleteDelegates.RemoveAll(this);
+		SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UCGameInstance::JoinSessionCompleted, (int)Port);
+		if (!SessionPtr->JoinSession(0, FName(SessionName), SessionSearchResults))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Joining Session Failed Right Away!"));
+			SessionPtr->OnJoinSessionCompleteDelegates.RemoveAll(this);
+		}
+	}
+}
+
+void UCGameInstance::JoinSessionCompleted(FName SessionName, EOnJoinSessionCompleteResult::Type JoinResult, int Port)
+{
+	IOnlineSessionPtr SessionPtr = GetSessionInterface();
+	if (SessionPtr && JoinResult == EOnJoinSessionCompleteResult::Success)
+	{
+		StopSessionSearches();
+		UE_LOG(LogTemp, Warning, TEXT("Join Session Successful! with port: %d"), Port);
+	}
+}
+
+void UCGameInstance::LoadLevelAndListen(TSoftObjectPtr<UWorld> Level)
+{
+	const FName LevelURL = FName(*FPackageName::ObjectPathToPackageName(Level.ToString()));
+	if (LevelURL != "")
+	{
+		FString TravelStr = FString::Printf(TEXT("%s?listen?port=%d"), *LevelURL.ToString(), ServerSessionPort);
+		UE_LOG(LogTemp, Warning, TEXT("Travel: %s"), *TravelStr);
+		GetWorld()->ServerTravel(TravelStr);
+	}
+}
+
+
+FString UCGameInstance::GetCommandlineArgAsString(const FName& ParamName) const
+{
+	FString OutVal = "";
+	FString CommandlineArg = FString::Printf(TEXT("%s="), *(ParamName.ToString()));
+	if (!FParse::Value(FCommandLine::Get(), *CommandlineArg, OutVal))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Can't find command line argument: %s"), *(ParamName.ToString()));
+	}
+	
+	return OutVal;
+}
+
+int UCGameInstance::GetCommandLineAsInt(const FName& ParamName) const
+{
+	int OutVal = 0;
+	FString CommandlineArg = FString::Printf(TEXT("%s="), *(ParamName.ToString()));
+	if (!FParse::Value(FCommandLine::Get(), *CommandlineArg, OutVal))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Can't find command line argument: %s"), *(ParamName.ToString()));
+	}
+	
+	return OutVal;
 }
 
 IOnlineSessionPtr UCGameInstance::GetSessionInterface() const
@@ -331,39 +470,4 @@ FString UCGameInstance::GetSessionSearchIDStr() const
 int UCGameInstance::GetSessionPort() const
 {
 	return GetCommandLineAsInt(SessionPortKey);
-}
-
-FString UCGameInstance::GetCommandlineArgAsString(const FName& ParamName) const
-{
-	FString OutVal = "";
-	FString CommandlineArg = FString::Printf(TEXT("%s="), *(ParamName.ToString()));
-	if (!FParse::Value(FCommandLine::Get(), *CommandlineArg, OutVal))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Can't find command line argument: %s"), *(ParamName.ToString()));
-	}
-	
-	return OutVal;
-}
-
-int UCGameInstance::GetCommandLineAsInt(const FName& ParamName) const
-{
-	int OutVal = 0;
-	FString CommandlineArg = FString::Printf(TEXT("%s="), *(ParamName.ToString()));
-	if (!FParse::Value(FCommandLine::Get(), *CommandlineArg, OutVal))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Can't find command line argument: %s"), *(ParamName.ToString()));
-	}
-	
-	return OutVal;
-}
-
-void UCGameInstance::LoadLevelAndListen(TSoftObjectPtr<UWorld> Level)
-{
-	const FName LevelURL = FName(*FPackageName::ObjectPathToPackageName(Level.ToString()));
-	if (LevelURL != "")
-	{
-		FString TravelStr = FString::Printf(TEXT("%s?listen?port=%d"), *LevelURL.ToString(), ServerSessionPort);
-		UE_LOG(LogTemp, Warning, TEXT("Travel: %s"), *TravelStr);
-		GetWorld()->ServerTravel(TravelStr);
-	}
 }
