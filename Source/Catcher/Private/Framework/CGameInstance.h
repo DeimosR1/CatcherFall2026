@@ -86,6 +86,11 @@ private:
 	void JoinSessionWithSearchResults(const FOnlineSessionSearchResult& SessionSearchResults);
 	void JoinSessionCompleted(FName SessionName, EOnJoinSessionCompleteResult::Type JoinResult, int Port);
 	
+	FString GetTestingURL() const;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Commandline Args")
+	FName TestingURLKey = "TEST_URL";
+	
 	//--------------------------------------------------------------------//
 	//                          Oline Interfaces                          //
 	//--------------------------------------------------------------------//

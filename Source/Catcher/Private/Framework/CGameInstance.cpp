@@ -246,6 +246,7 @@ void UCGameInstance::StartFindingAndJoinSession(FGuid SessionSearchID)
 void UCGameInstance::TryFindAndJoinSession()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Requesting to find and join session"));
+	StartFindingAndJoinSession();
 }
 
 void UCGameInstance::ClientLoginCompleted(int LocalPlayerNumber, bool bWasSuccessful, const FUniqueNetId& UserId,
@@ -398,6 +399,25 @@ void UCGameInstance::JoinSessionCompleted(FName SessionName, EOnJoinSessionCompl
 	{
 		StopSessionSearches();
 		UE_LOG(LogTemp, Warning, TEXT("Join Session Successful! with port: %d"), Port);
+		
+		FString TravelURL = "";
+		SessionPtr->GetResolvedConnectString(SessionName, TravelURL);
+		FString TestingURL = GetTestingURL();
+		if (!TestingURL.IsEmpty())
+		{
+			TravelURL = TestingURL;
+		}
+		
+		FURL URL(nullptr, *TravelURL, TRAVEL_Absolute);
+		URL.Port = Port;
+		TravelURL = URL.ToString();
+		
+		UE_LOG(LogTemp, Warning, TEXT("Traveling to session at: %s"), *TravelURL);
+		GetFirstLocalPlayerController(GetWorld())->ClientTravel(TravelURL, TRAVEL_Absolute);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Join Session failed."));
 	}
 }
 
@@ -412,6 +432,11 @@ void UCGameInstance::LoadLevelAndListen(TSoftObjectPtr<UWorld> Level)
 	}
 }
 
+FString UCGameInstance::GetTestingURL() const
+{
+	FString TestingURL = GetCommandlineArgAsString(TestingURLKey);
+	return TestingURL;
+}
 
 FString UCGameInstance::GetCommandlineArgAsString(const FName& ParamName) const
 {
