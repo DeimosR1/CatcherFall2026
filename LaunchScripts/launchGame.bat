@@ -2,4 +2,6 @@
 %~dp0../Catcher.uproject ^
 -game ^
 -log ^
--epicapp="GameClient"
+-windowed ^
+-epicapp="GameClient" ^
+-TEST_URL="127.0.0.1:7777" ^
